@@ -44,7 +44,7 @@ public class Student implements Serializable {
     @Column(name = "Gender")
     private String gender;
     @JoinColumn(name = "Room_ID", referencedColumnName = "Room_ID")
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     private Rooms roomID;
 
     public Student() {

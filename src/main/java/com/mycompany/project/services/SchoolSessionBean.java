@@ -5,6 +5,7 @@
 package com.mycompany.project.services;
 
 import com.mycompany.project.entities.Rooms;
+import com.mycompany.project.entities.Student;
 import java.util.List;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
@@ -28,13 +29,13 @@ public class SchoolSessionBean implements SchoolSessionBeanLocal {
 
     @Override
     public void addClass(Rooms newClass) {
-            entityManager.persist(newClass); 
+        entityManager.persist(newClass);
     }
-        @Override
+
+    @Override
     public void updateRoom(Rooms room) {
         entityManager.merge(room);
     }
-   
 
     @Override
     public boolean classNameExists(String name, Integer excludeId) {
@@ -69,10 +70,14 @@ public class SchoolSessionBean implements SchoolSessionBeanLocal {
         }
         Rooms mergedRoom = entityManager.find(Rooms.class, classId);
         return mergedRoom;
-        
+
     }
 
-   
-
+    @Override
+    public Rooms getClassWithStudents(Integer roomId) {
+        Rooms room = entityManager.find(Rooms.class, roomId);
+        room.getStudentList().size(); 
+        return room;
+    }
 
 }

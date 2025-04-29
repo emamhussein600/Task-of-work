@@ -27,7 +27,7 @@ public interface SchoolSessionBeanLocal {
 
     Rooms findRoomById(Integer classId);
     
-   
+    Rooms getClassWithStudents(Integer roomId) ;
    
     public void updateRoom(Rooms room);
 

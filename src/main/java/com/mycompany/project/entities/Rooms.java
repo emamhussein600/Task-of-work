@@ -44,7 +44,7 @@ public class Rooms implements Serializable {
     @Size(max = 255)
     @Column(name = "Room_Description")
     private String roomDescription;
-    @OneToMany(mappedBy = "roomID", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "roomID", fetch = FetchType.LAZY)
     private List<Student> studentList = new ArrayList<>();
 
     public Rooms() {

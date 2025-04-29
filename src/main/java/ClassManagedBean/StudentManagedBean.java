@@ -140,17 +140,15 @@ public class StudentManagedBean implements Serializable {
 
             if (studentList.stream().noneMatch(s -> s.getStudentID().equals(selectedStudent.getStudentID()))) {
                 studentList.add(selectedStudent);
+                selectedStudent.getRoomID().getStudentList().add(selectedStudent);
             }
-            selectedStudent.getRoomID().getStudentList().add(selectedStudent);
-            studentServicesLocal.updateStudent(selectedStudent);
-
             FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "Success", "Student updated successfully");
             FacesContext.getCurrentInstance().addMessage(null, message);
 
         } catch (Exception e) {
             FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Failed to update student");
             FacesContext.getCurrentInstance().addMessage(null, message);
-            e.printStackTrace();
+
         }
 
         PrimeFaces.current().executeScript("PF('manageStudentDialog').hide()");

@@ -76,4 +76,6 @@ public class StudentSessionBean implements StudentSessionBeanLocal {
         return (mergedRoom);
 
     }
+
+
 }

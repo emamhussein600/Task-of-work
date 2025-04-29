@@ -5,6 +5,7 @@
 package ClassManagedBean;
 
 import com.mycompany.project.entities.Rooms;
+import com.mycompany.project.entities.Student;
 import com.mycompany.project.services.SchoolSessionBeanLocal;
 import javax.inject.Named;
 import javax.faces.view.ViewScoped;
@@ -83,6 +84,7 @@ public class ClassManagedBean implements Serializable {
     }
 
     public void deleteClass() {
+        selectedClass = schoolLocal.getClassWithStudents(selectedClass.getRoomID());
         if (!selectedClass.getStudentList().isEmpty()) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("Class has students"));
             PrimeFaces.current().ajax().update("form:messages", "form:dt-classes");
