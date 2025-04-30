@@ -15,7 +15,7 @@
             <h:form id="form">
                 <p:growl id="messages" showDetail="true" globalOnly="true" />
 
-                <p:toolbar>
+                <p:toolbar style="display: flex; justify-content: space-between">
                     <p:toolbarGroup>
                         <p:commandButton value="Add Class" icon="pi pi-plus"
                                          actionListener="#{classManagedBean.open()}"
@@ -31,7 +31,22 @@
                                          style="float: right"
                                          update="form:messages form:dt-classes"
                                          process="@this" />
-
+                        <p:commandButton value="Xlsx"
+                                         icon="pi pi-download"
+                                         actionListener="#{classManagedBean.exportExcel()}"
+                                         ajax="false"
+                                         styleClass="ui-button-success"
+                                         style="margin-left: .5rem">
+                            <p:fileDownload value="#{classManagedBean.file}" />
+                        </p:commandButton>
+                        <p:commandButton value="Vsdx"
+                                         icon="pi pi-download"
+                                         actionListener="#{classManagedBean.exportWord()}"
+                                         ajax="false"
+                                         styleClass="ui-button-success"
+                                         style="margin-left: .5rem">
+                            <p:fileDownload value="#{classManagedBean.file}" />
+                        </p:commandButton>
                     </p:toolbarGroup>
                 </p:toolbar>
 
@@ -40,7 +55,7 @@
                              styleClass="classes-table" rowKey="#{class.roomID}"
                              paginator="true" rows="7" paginatorPosition="bottom" selectionMode="single">
 
-                    <p:column >
+                    <p:column headerText="Index">
                         <h:outputText value="#{indx + 1}" />
                     </p:column>
 

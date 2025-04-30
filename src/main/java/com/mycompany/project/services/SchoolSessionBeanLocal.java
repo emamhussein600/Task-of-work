@@ -21,8 +21,6 @@ public interface SchoolSessionBeanLocal {
 
     void addClass(Rooms newClass);
 
-    public boolean classNameExists(String className, Integer excludeId);
-
     void removeClass(Rooms removedClass);
 
     Rooms findRoomById(Integer classId);

@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/JSF/JSFManagedBean.java to edit this template
  */
-package ClassManagedBean;
+package ManagedBean;
 
 import com.mycompany.project.entities.Rooms;
 import com.mycompany.project.entities.Student;
@@ -162,9 +162,9 @@ public class StudentManagedBean implements Serializable {
 
     public void saveOrUpdateStudent() {
         if (selectedStudent.getStudentID() == null) {
-            saveStudent();  // call existing save
+            saveStudent();  
         } else {
-            update();  // call existing update
+            update();  
         }
     }
 

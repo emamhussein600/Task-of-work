@@ -2,21 +2,34 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/JSF/JSFManagedBean.java to edit this template
  */
-package ClassManagedBean;
+package ManagedBean;
 
 import com.mycompany.project.entities.Rooms;
-import com.mycompany.project.entities.Student;
 import com.mycompany.project.services.SchoolSessionBeanLocal;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import javax.inject.Named;
 import javax.faces.view.ViewScoped;
 import java.io.Serializable;
-import static java.util.Arrays.stream;
 import java.util.List;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
+import org.apache.commons.io.output.ByteArrayOutputStream;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.poi.xwpf.usermodel.ParagraphAlignment;
+import org.apache.poi.xwpf.usermodel.XWPFDocument;
+import org.apache.poi.xwpf.usermodel.XWPFParagraph;
+import org.apache.poi.xwpf.usermodel.XWPFRun;
+import org.apache.poi.xwpf.usermodel.XWPFTable;
+import org.apache.poi.xwpf.usermodel.XWPFTableRow;
 import org.primefaces.PrimeFaces;
+import org.primefaces.model.DefaultStreamedContent;
+import org.primefaces.model.StreamedContent;
 
 /**
  *
@@ -33,6 +46,8 @@ public class ClassManagedBean implements Serializable {
     private Rooms selectedClass;
 
     private Rooms oldRoom;
+
+    private StreamedContent file;
 
     public Rooms getOldRoom() {
         return oldRoom;
@@ -112,11 +127,11 @@ public class ClassManagedBean implements Serializable {
         }
         try {
             schoolLocal.updateRoom(selectedClass);
-            if(classList.stream().noneMatch(c-> c.getRoomID().equals(selectedClass.getRoomID()))){
+            if (classList.stream().noneMatch(c -> c.getRoomID().equals(selectedClass.getRoomID()))) {
                 classList.add(selectedClass);
             }
-            
-            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "Success", "Student updated successfully");
+
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "Success", "Class updated successfully");
             FacesContext.getCurrentInstance().addMessage(null, message);
 
         } catch (Exception e) {
@@ -127,7 +142,8 @@ public class ClassManagedBean implements Serializable {
 
         PrimeFaces.current().ajax().update("form:messages", "form:dt-classes");
     }
-        public void saveOrUpdateClass() {
+
+    public void saveOrUpdateClass() {
         if (selectedClass.getRoomID() == null) {
             saveClass();  // call existing save
         } else {
@@ -144,6 +160,72 @@ public class ClassManagedBean implements Serializable {
     public void loadClass(Rooms updatedRoom) {
         this.selectedClass = updatedRoom;
         oldRoom = OldRoom(this.selectedClass);
+    }
+
+    public void exportExcel() {
+        try (Workbook book = new XSSFWorkbook()) {
+            Sheet sheet = book.createSheet("Classes");
+
+            // Header
+            Row header = sheet.createRow(0);
+            header.createCell(0).setCellValue("Index");
+            header.createCell(1).setCellValue("Class Name");
+            header.createCell(2).setCellValue("Description");
+
+            //Rows
+            int nums = 1;
+            for (Rooms room : classList) {
+                Row row = sheet.createRow(nums++);
+                row.createCell(0).setCellValue(room.getRoomID());
+                row.createCell(1).setCellValue(room.getRoomName());
+                row.createCell(2).setCellValue(room.getRoomDescription());
+            }
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            book.write(out);
+            InputStream in = new ByteArrayInputStream(out.toByteArray());
+            file = DefaultStreamedContent.builder()
+                    .name("classes.xlsx")
+                    .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                    .stream(() -> in)
+                    .build();
+        } catch (Exception e) {
+
+            e.printStackTrace();
+        }
+    }
+
+    public void exportWord() {
+        try (XWPFDocument document = new XWPFDocument()) {
+            if (classList == null || classList.isEmpty()) {
+                System.out.println("classList is empty");
+                return;
+            }
+
+            for (Rooms room : classList) {
+                XWPFParagraph p = document.createParagraph();
+                XWPFRun r = p.createRun();
+                r.setText("Room ID: " + room.getRoomID());
+                r.addBreak();
+                r.setText("Room Name: " + room.getRoomName());
+                r.addBreak();
+                r.setText("Description: " + room.getRoomDescription());
+                r.addBreak();
+                r.addBreak();
+            }
+
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            document.write(out);
+            InputStream in = new ByteArrayInputStream(out.toByteArray());
+
+            file = DefaultStreamedContent.builder()
+                    .name("classes.docx")
+                    .contentType("application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+                    .stream(() -> in)
+                    .build();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public void prepareToDelete(Rooms c) {
@@ -164,6 +246,14 @@ public class ClassManagedBean implements Serializable {
 
     public void setSelectedClass(Rooms selectedClass) {
         this.selectedClass = selectedClass;
+    }
+
+    public StreamedContent getFile() {
+        return file;
+    }
+
+    public void setFile(StreamedContent file) {
+        this.file = file;
     }
 
 }

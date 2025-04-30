@@ -70,7 +70,7 @@ public class StudentSessionBean implements StudentSessionBeanLocal {
     @Override
     public Rooms findRoomById(Integer classId) {
         if (classId == null) {
-            return null; // أو يمكن إرجاع كائن فارغ حسب الحاجة
+            return null; 
         }
         Rooms mergedRoom = entityManager.find(Rooms.class, classId);
         return (mergedRoom);

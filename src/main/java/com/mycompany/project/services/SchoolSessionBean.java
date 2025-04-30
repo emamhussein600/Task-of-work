@@ -10,7 +10,6 @@ import java.util.List;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.persistence.TypedQuery;
 
 /**
  *
@@ -36,26 +35,14 @@ public class SchoolSessionBean implements SchoolSessionBeanLocal {
     public void updateRoom(Rooms room) {
         entityManager.merge(room);
     }
-
-    @Override
-    public boolean classNameExists(String name, Integer excludeId) {
-        String jpql;
-        TypedQuery<Long> query;
-
-        if (excludeId == null) {
-            jpql = "SELECT COUNT(r) FROM Rooms r WHERE r.roomName = :name";
-            query = entityManager.createQuery(jpql, Long.class);
-            query.setParameter("name", name);
-        } else {
-            jpql = "SELECT COUNT(r) FROM Rooms r WHERE r.roomName = :name AND r.roomID <> :id";
-            query = entityManager.createQuery(jpql, Long.class);
-            query.setParameter("name", name);
-            query.setParameter("id", excludeId);
-        }
-
-        Long count = query.getSingleResult();
-        return count > 0;
+    
+        @Override
+    public Rooms getClassWithStudents(Integer roomId) {
+        Rooms room = entityManager.find(Rooms.class, roomId);
+        room.getStudentList().size();
+        return room;
     }
+
 
     @Override
     public void removeClass(Rooms removedClass) {
@@ -66,18 +53,12 @@ public class SchoolSessionBean implements SchoolSessionBeanLocal {
     @Override
     public Rooms findRoomById(Integer classId) {
         if (classId == null) {
-            return null; // أو يمكن إرجاع كائن فارغ حسب الحاجة
+            return null;
         }
         Rooms mergedRoom = entityManager.find(Rooms.class, classId);
         return mergedRoom;
 
     }
 
-    @Override
-    public Rooms getClassWithStudents(Integer roomId) {
-        Rooms room = entityManager.find(Rooms.class, roomId);
-        room.getStudentList().size(); 
-        return room;
-    }
 
 }
