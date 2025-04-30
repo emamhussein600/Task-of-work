@@ -7,16 +7,35 @@ package ManagedBean;
 import com.mycompany.project.entities.Rooms;
 import com.mycompany.project.services.SchoolSessionBeanLocal;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.InputStream;
 import javax.inject.Named;
 import javax.faces.view.ViewScoped;
 import java.io.Serializable;
+import java.net.Authenticator;
+import java.net.PasswordAuthentication;
+import java.util.Base64;
 import java.util.List;
+import java.util.Properties;
+import javax.activation.DataHandler;
+import javax.activation.DataSource;
+import javax.activation.FileDataSource;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
-import org.apache.commons.io.output.ByteArrayOutputStream;
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.Multipart;
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
+import javax.mail.util.ByteArrayDataSource;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -86,13 +105,10 @@ public class ClassManagedBean implements Serializable {
 
         schoolLocal.addClass(selectedClass);
 
-        if (isNew) {
+        if (!isNew) {
             classList.add(selectedClass);
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("Class Added Successfully"));
-        } else {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("Class Updated"));
         }
-
         selectedClass = new Rooms();
         PrimeFaces.current().executeScript("PF('manageClassDialog').hide()");
         PrimeFaces.current().ajax().update("form:messages", "form:dt-classes");
@@ -225,6 +241,81 @@ public class ClassManagedBean implements Serializable {
 
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    public void sendEmailWithExcel() {
+        try (Workbook book = new XSSFWorkbook()) {
+            // Create Excel
+            Sheet sheet = book.createSheet("Classes");
+
+            // headers
+            Row header = sheet.createRow(0);
+            header.createCell(0).setCellValue("Index");
+            header.createCell(1).setCellValue("Class Name");
+            header.createCell(2).setCellValue("Description");
+
+            int rowNum = 1;
+            for (Rooms room : classList) {
+                Row row = sheet.createRow(rowNum++);
+                row.createCell(0).setCellValue(room.getRoomID());
+                row.createCell(1).setCellValue(room.getRoomName());
+                row.createCell(2).setCellValue(room.getRoomDescription());
+            }
+
+            // transfer data to byte
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            book.write(out);
+            byte[] excelBytes = out.toByteArray();
+
+            // domain data
+            final String host = "mail.bass.com.eg";
+            final String fromEmail = "e.hussien@bass.com.eg";
+            final String toEmail = "emamhussein800@gmail.com";
+            final String username = "e.hussien@bass.com.eg";
+            final String password = "P@ssw0rd_2025";
+
+            //  Setting SMTP
+            Properties props = new Properties();
+            props.put("mail.smtp.auth", "true");
+            props.put("mail.smtp.starttls.enable", "true");
+            props.put("mail.smtp.host", host);
+            props.put("mail.smtp.port", "587");
+
+            Session session = Session.getInstance(props, new javax.mail.Authenticator() {
+                protected javax.mail.PasswordAuthentication getPasswordAuthentication() {
+                    return new javax.mail.PasswordAuthentication(username, password);
+                }
+            });
+
+            // Message Setting
+            Message message = new MimeMessage(session);
+            message.setFrom(new InternetAddress(fromEmail));
+            message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(toEmail));
+            message.setSubject("Class Excel Report");
+
+            // email text
+            MimeBodyPart textPart = new MimeBodyPart();
+            textPart.setText("Attached is the Excel file containing the list of classes.");
+
+            // attachement
+            MimeBodyPart attachmentPart = new MimeBodyPart();
+            attachmentPart.setDataHandler(new DataHandler(new ByteArrayDataSource(excelBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")));
+            attachmentPart.setFileName("classes.xlsx");
+
+            Multipart multipart = new MimeMultipart();
+            multipart.addBodyPart(textPart);
+            multipart.addBodyPart(attachmentPart);
+
+            message.setContent(multipart);
+
+            // Sender
+            Transport.send(message);
+
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("Email sent successfully!"));
+        } catch (Exception e) {
+            e.printStackTrace();
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error sending email", e.getMessage()));
         }
     }
 

@@ -47,6 +47,12 @@
                                          style="margin-left: .5rem">
                             <p:fileDownload value="#{classManagedBean.file}" />
                         </p:commandButton>
+                        <p:commandButton value="Send Email"
+                                         icon="pi pi-envelope"
+                                         action="#{classManagedBean.sendEmailWithExcel}"
+                                         update="form:messages"
+                                         styleClass="ui-button-success" 
+                                         style="margin-left: .5rem"/>
                     </p:toolbarGroup>
                 </p:toolbar>
 
